@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="message-box">
+  <h2>Chat Room: {{ code }}</h2>
+  <div class="messages" id="messages"></div>
+  <div class="inputs">
+    <input type="text" rows="3" placeholder="Message" name="message" id="message" />
+    <button onClick="attachFile()">
+      <i class="fa fa-file"></i> Add File
+    </button>
+    <button type="button" name="send" id="send-btn" onClick="sendMessage()">
+      Send
+    </button>
+  </div>
+  <input type="file" id="file-input" style="display: none;" />
+</div>
+
+<script type="text/javascript">
+  var socketio = io();
+  var messages = document.getElementById("messages");
+  var fileInput = document.getElementById("file-input");
+
+  function createMessage(name, msg) {
+    if (msg.includes('http')) {
+      // Display image in that
+      var imageContent = `
+        <div class="image">
+          <img src="${msg}" alt="Image" style="height: 50px;" />
+        </div>
+      `;
+      messages.innerHTML += imageContent;
+    } else {
+      var content = `
+        <div class="text">
+          <span>
+            <strong>${name}</strong>: ${msg}
+          </span>
+          <span class="muted">
+            ${new Date().toLocaleString()}
+          </span>
+        </div>
+      `;
+      messages.innerHTML += content;
+    }
+  }
+
+  socketio.on("message", function (data) {
+    console.log("data socketio: ", data)
+    createMessage(data.name, data.message);
+  });
+
+  function sendImageToServer(file) {
+      var formData = new FormData();
+      formData.append('file', file);
+
+      fetch('http://localhost:8000/message/image', {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Error: ' + response.status);
+          }
+          return response.json();
+        })
+        .then(data => {
+          console.log('Server response:', data);
+          var audioUrl = data.audio_url;
+          if (audioUrl) {
+            // Create an audio element and set the source to the audio URL
+            var audioElement = document.createElement('audio');
+            audioElement.setAttribute('src', audioUrl);
+            audioElement.setAttribute('controls', 'controls');
+
+            // Append the audio element to the messages div
+            messages.appendChild(audioElement);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          if (error.message.includes('422')) {
+            // Display validation errors
+            var errorContent = `
+          <div class="error">
+            <span>${error.message}</span>
+          </div>
+        `;
+            messages.innerHTML += errorContent;
+          }
+        });
+    }
+  function sendMessage() {
+      var message = document.getElementById("message").value;
+      var file = fileInput.files[0];
+
+      if (message.trim() === "" && (!file || file === undefined)) {
+        return;
+      }
+
+      var data = {
+        message: message
+      };
+      console.log("data sendMessage: ", data);
+      socketio.emit("message", data);
+
+      if (file && file !== undefined) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var imageContent = `
+        <div class="image">
+          <img src="${e.target.result}" alt="Image" style="height: 50px;" />
+        </div>
+      `;
+          messages.innerHTML += imageContent;
+          sendImageToServer(file);
+
+          // Hide the image content next to the file-input element
+          fileInput.nextElementSibling.style.display = "none";
+        };
+        reader.readAsDataURL(file);
+      }
+
+      // Clear the text input and file input
+      document.getElementById("message").value = "";
+      fileInput.value = "";
+    }
+  function attachFile() {
+    fileInput.click();
+  }
+
+  fileInput.addEventListener("change", function () {
+      var file = fileInput.files[0];
+
+      // Display the selected image
+      if (file) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+          var imageContent = `
+        <div class="image">
+          <img src="${e.target.result}" alt="Image" style="height: 50px;" />
+        </div>
+      `;
+          // Insert the image content next to the file-input element
+          fileInput.insertAdjacentHTML('afterend', imageContent);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+</script>
+
+{% for msg in messages %}
+<script type="text/javascript">
+  createMessage("{{ msg.name }}", "{{ msg.message }}");
+</script>
+{% endfor %}
+{% endblock %}
