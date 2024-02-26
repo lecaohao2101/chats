@@ -1,11 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
+{#    navbar have content " Message App" and have background blue#}
+
+
 <div class="message-box">
+    <div class="message-box" style="background-color: blue; height: 30px; text-align: center; color: white; font-weight: bold;">
+    Message App
+    </div>
   <h2>Chat Room: {{ code }}</h2>
   <div class="messages" id="messages"></div>
   <div class="inputs">
-    <input type="text" rows="3" placeholder="Message" name="message" id="message" />
+    <input type="text" rows="3" style="height: 30px;" placeholder="Type a message..." name="message" id="message" />
     <button onClick="attachFile()">
       <i class="fa fa-file"></i> Add File
     </button>
