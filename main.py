@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, session, redirect, url_for
-from flask_socketio import join_room, leave_room, send, SocketIO
 import random
 from string import ascii_uppercase
+
+from flask import Flask, render_template, request, session, redirect, url_for
+from flask_socketio import join_room, leave_room, send, SocketIO
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "hjhjsdahhds"
@@ -10,6 +11,7 @@ socketio = SocketIO(app)
 rooms = {}
 
 
+# create room code
 def generate_unique_code(length):
     while True:
         code = ""
@@ -22,6 +24,7 @@ def generate_unique_code(length):
     return code
 
 
+# Home
 @app.route("/", methods=["POST", "GET"])
 def home():
     session.clear()
@@ -51,6 +54,7 @@ def home():
     return render_template("home.html")
 
 
+#Room
 @app.route("/room")
 def room():
     room = session.get("room")
@@ -58,22 +62,6 @@ def room():
         return redirect(url_for("home"))
 
     return render_template("room.html", code=room, messages=rooms[room]["messages"])
-
-
-# @socketio.on("message")
-# def message(data):
-#     room = session.get("room")
-#     if room not in rooms:
-#         return 
-
-#     content = {
-#         "name": session.get("name"),
-#         "message": data["data"]
-#     }
-#     send(content, to=room)
-#     rooms[room]["messages"].append(content)
-#     print(f"{session.get('name')} said: {data['data']}")
-
 @socketio.on("message")
 def message(data):
     room = session.get("room")
@@ -82,7 +70,7 @@ def message(data):
 
     content = {
         "name": session.get("name"),
-        "message": data["message"]  # Fix the key to "message"
+        "message": data["message"],
     }
     send(content, to=room)
     rooms[room]["messages"].append(content)

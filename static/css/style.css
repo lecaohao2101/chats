@@ -1,3 +1,32 @@
+body {
+  background-image: linear-gradient(to bottom right, #3498db, #2ecc71);
+  margin: 0;
+  font-family: 'Arial', sans-serif;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 20px;
+  border-radius: 10px;
+}
+.error{
+  color: red;
+  font-size: 16px;
+  font-weight: bold;
+}
 .content {
   display: flex;
   align-items: center;
@@ -67,21 +96,23 @@ h2 {
   font-size: 10px;
   color: darkgray;
 }
+    .messages {
+        display: flex;
+        flex-direction: column;
+    }
 
-.sent-message {
-    float: right;
-    clear: both;
-    background-color: #4CAF50;
-    color: white;
-    margin-right: 10px;
-    border-radius: 5px;
-  }
+    .message-sent {
+        align-self: flex-end;
+        background-color: #3b4cde;
+        border-radius: 10px;
+        padding: 8px;
+        margin: 5px;
+    }
 
-  .received-message {
-    float: left;
-    clear: both;
-    background-color: #2196F3;
-    color: white;
-    margin-left: 10px;
-    border-radius: 5px;
-  }
+    .message-received {
+        align-self: flex-start;
+        background-color: #ECECEC;
+        border-radius: 10px;
+        padding: 8px;
+        margin: 5px;
+    }
